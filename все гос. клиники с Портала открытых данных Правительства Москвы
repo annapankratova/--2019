@@ -1,0 +1,15 @@
+import requests
+import pandas as pd
+all_clinics = list()
+r = requests.get('https://apidata.mos.ru/v1/datasets/1193/features?api_key=bbaf6884f15a61bd48162ac670a92e5d')
+
+for clinic in r.json()['features']:
+    all_clinics.append([clinic['properties']['Attributes']['FullName'],
+                       clinic['properties']['Attributes']['ShortName'],
+                       clinic['properties']['Attributes']['Address'],
+                       clinic['properties']['Attributes']['AdmArea'],
+                       clinic['properties']['Attributes']['PublicPhone'][0]['PublicPhone'],
+                       clinic['properties']['Attributes']['District'],
+                       clinic['properties']['Attributes']['WorkingHours'][0]['Hours']])
+df = pd.DataFrame(all_clinics)
+df.columns = ['Полное название','Короткое название', 'Адрес', 'Округ', 'Телефон', 'Район', 'Часы работы']
