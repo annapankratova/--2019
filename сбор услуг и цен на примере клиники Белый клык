@@ -1,0 +1,19 @@
+import requests
+# Сначала изучили сайт и нашли страницу с ценами
+page = requests.get("http://www.bkvet.ru/price-moscow#")
+from bs4 import BeautifulSoup
+soup = BeautifulSoup(page.content, 'html.parser')
+# Следующим шагом на странице с ценами нашли способ парсить нужные нам данные. Так для названий отделений характерно, что
+# это тек div, с классом bigbutton. А списки цен для каждого отделения хранятся внутри тека table с классом bordedtable
+services_list = list()
+for department,department_services in \
+zip(soup.find_all('div', class_='bigbutton'),soup.find_all('table', class_='bordedtable')):
+    department_name = department.get_text()
+    for service in department_services.find_all('tr'):
+        # Дальше первый столбец в строке это название услуги, а все остальные (обычно 1) это прайс
+        services_list.append([department_name, service.find_all('td')[0].get_text(), ' '.join([x.get_text() for x in service.find_all('td')[1:]])])
+        
+# Генерируем датафрейм пандаса из трех столбцов для дальнейшей записи в базу
+df = pd.DataFrame(services_list, columns = ['department','service','price'])
+# В данных оказались мусрные строки самый простой способ их пофиксить - отфильтровать по длине строки
+df = df[df['price'].str.len()<10]
