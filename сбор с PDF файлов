@@ -1,0 +1,18 @@
+from tabula import read_pdf
+# Глазами взглянули на пдф и посмотрели, что это таблица которую не нужно OCRить и в которой 10 страниц
+# Запустили парсер
+df = read_pdf("http://vetcentromsk.ru/fck_editor_files/files/price.pdf", pages = '1-10')
+# Таблица считалась криво, часть данных записалась в другой столбец. Делаем нормально
+df1 = df.loc[df['No п/п'].isnull(),['Номенклатура','Цена']]
+df1.columns = ['Номенклатура','Цена']
+df2 = df.loc[(df['Цена'].isnull())&(~df['No п/п'].isnull()),['No п/п','Номенклатура']]
+df2.columns = ['Номенклатура','Цена']
+df = pd.concat([df1,df2])
+# Дальше вытаскиваем отделения из строк услуг
+df.loc[(df['Номенклатура'].str.len()<40)&(df['Цена'].isnull())&(df['Номенклатура'].str[0].apply(lambda x: x.isupper())),'department'] = df.loc[(df['Номенклатура'].str.len()<40)&(df['Цена'].isnull())&(df['Номенклатура'].str[0].apply(lambda x: x.isupper())),'Номенклатура'] 
+# Заполняем значения отделений во всех строках и удаляем строки отделений
+df['department'].fillna(method = 'ffill',inplace = True)
+df = df[df['Номенклатура']!=df['department']]
+# хак для удаления сложно чистящихся данных чтобы сэкономить время
+df = df[(~df['Цена'].isnull())&(df['Номенклатура'].str[0].apply(lambda x: x.isupper()))]
+df.columns = ['service','price','department']
