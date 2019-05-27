@@ -1,0 +1,33 @@
+CREATE SEQUENCE serial;
+
+CREATE TABLE clinic (
+    id        integer PRIMARY KEY DEFAULT nextval('serial'),
+    name       varchar(400) NOT NULL,
+    address         varchar(400) NOT NULL,
+    metrostation   varchar(50),
+    phone        varchar(15),
+    email         varchar(50),
+    ratingnumber integer
+);
+
+
+CREATE TABLE servicetype (
+    id        integer PRIMARY KEY DEFAULT nextval('serial'),
+    name       varchar(400) NOT NULL
+);
+
+
+CREATE TABLE service (
+    id        integer PRIMARY KEY DEFAULT nextval('serial'),
+    name       varchar(400) NOT NULL,
+    servicetypeid integer references servicetype(id)
+);
+
+
+CREATE TABLE clinicservice (
+    Clinik_id        integer not null references clinic(id),
+    Service_id       integer NOT null references service(id),
+    price            number not null,
+    discount         varchar(400)
+    CONSTRAINT clinic_service PRIMARY KEY(Clinik_id,Service_id)
+);
